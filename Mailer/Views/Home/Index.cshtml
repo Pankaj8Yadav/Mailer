@@ -1,0 +1,108 @@
+﻿@{
+	ViewData["Title"] = "Home Page";
+}
+
+<!-- Card for OTP Email -->
+<div class="card mb-4">
+	<div class="card-header bg-info text-white">
+		<h5 class="mb-0">Send OTP</h5>
+	</div>
+	<div class="card-body ">
+		<div class="form-group mb-2">
+			<label for="email">Enter your email:</label>
+			<input type="email" id="email" class="form-control" placeholder="Enter email" />
+		</div>
+		<button id="sendOtpButton" class="btn btn-success w-10">Send OTP</button>
+		<p id="otpMessage" class="mt-3"></p> <!-- To display success/failure messages -->
+	</div>
+</div>
+
+<!-- Card for Email Fetcher -->
+<div class="card mb-4">
+	<div class="card-header bg-warning text-white">
+		<h5 class="mb-0">Show Emails</h5>
+	</div>
+	<div class="row card-body">
+		<!-- Buttons in a single row -->
+		<div class="col-md-6 mb-3">
+			<button id="sendBulkEmailButton" class="btn btn-lg btn-primary w-100">Send Bulk Email</button>
+		</div>
+		<div class="col-md-6 mb-3">
+			<button id="fetchEmailButton" class="btn btn-lg btn-warning w-100">Fetch Emails</button>
+		</div>
+		<p id="message" class="mt-3"></p> <!-- This will show success or failure messages -->
+		<ul id="emailList" class="list-group mt-3"></ul> <!-- This is where the emails will be displayed -->
+	</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function () {
+		// On button click
+		$("#sendOtpButton").click(function () {
+			var email = $("#email").val();  // Get the entered email
+			if (email) {
+				// Send the AJAX request to the SendOtp action
+				$.ajax({
+					url: "/Home/SendEmail",  // URL of the action
+					type: "POST",
+					data: { email: email },  // Send email as data
+					success: function (response) {
+						// If OTP sent successfully
+						if (response.success) {
+							$("#message").text(response.message);  // Display success message
+						} else {
+							$("#message").text(response.message);  // Display error message
+						}
+					},
+					error: function () {
+						// Handle any AJAX errors
+						$("#message").text("An error occurred. Please try again.");
+					}
+				});
+			} else {
+				// If email is empty
+				$("#message").text("Please enter a valid email.");
+			}
+		});
+
+		$("#fetchEmailButton").click(function () {
+			debugger;
+			// Send the AJAX request to the GetEmail action
+			$.ajax({
+				url: "/Home/GetEmails",  // URL of the action
+				type: "GET",
+				success: function (response) {
+					// If request is successful, populate the email list
+					var emailList = $("#emailList");
+					emailList.empty();  // Clear any previous data
+
+					// Loop through the response (which is a list of emails) and add to the list
+					$.each(response, function (index, emails) {
+						 debugger;
+						emailList.append("<li>" + emails.email + "</li>");
+					});
+				},
+				error: function () {
+					// Handle any AJAX errors
+					alert("An error occurred while fetching emails.");
+				}
+			});
+		});
+		$("#sendBulkEmailButton").click(function () {
+			// Send AJAX request to send emails
+			$.ajax({
+				url: "/Home/SendBulkEmail",  // URL of the action
+				type: "POST",
+				success: function (response) {
+					// Display success message
+					$("#message").text(response.message);
+				},
+				error: function () {
+					// Display error message
+					$("#message").text("An error occurred while sending bulk emails.");
+				}
+			});
+		});
+	});
+</script>
